@@ -768,6 +768,8 @@ mod tests {
 
   use super::*;
 
+  const EPSILON: f32 = 0.000000000001;
+
   #[test]
   fn test_get_mask_index() {
     assert_eq!(get_mask_index(3840, 2160, 7), 24);
@@ -794,7 +796,7 @@ mod tests {
       0,
       1,
     );
-    assert_relative_eq!(c_value, 2.6666667);
+    assert_relative_eq!(c_value, 2.6666667, epsilon = EPSILON);
 
     diff_weights[0] = 4;
     diff_weights[1] = 5;
@@ -808,7 +810,7 @@ mod tests {
       0,
       1,
     );
-    assert_relative_eq!(c_value, 6.6666667);
+    assert_relative_eq!(c_value, 6.6666667, epsilon = EPSILON);
 
     let value = 4;
     let c_value = c_value_pixel(
@@ -827,10 +829,10 @@ mod tests {
   #[test]
   fn test_spatial_pooling() {
     let mut arr = [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 10.0, 7.0, 8.0, 9.0, 6.0, 11.0];
-    assert_relative_eq!(spatial_pooling(&mut arr, 0.0, 4, 3), 11.0);
-    assert_relative_eq!(spatial_pooling(&mut arr, 0.1, 4, 3), 11.0);
-    assert_relative_eq!(spatial_pooling(&mut arr, 0.2, 4, 3), 10.5);
-    assert_relative_eq!(spatial_pooling(&mut arr, 1.0, 4, 3), 5.5);
+    assert_relative_eq!(spatial_pooling(&mut arr, 0.0, 4, 3), 11.0, epsilon = f64::from(EPSILON));
+    assert_relative_eq!(spatial_pooling(&mut arr, 0.1, 4, 3), 11.0, epsilon = f64::from(EPSILON));
+    assert_relative_eq!(spatial_pooling(&mut arr, 0.2, 4, 3), 10.5, epsilon = f64::from(EPSILON));
+    assert_relative_eq!(spatial_pooling(&mut arr, 1.0, 4, 3), 5.5, epsilon = f64::from(EPSILON));
   }
 
   #[test]

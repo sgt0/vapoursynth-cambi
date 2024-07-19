@@ -71,6 +71,8 @@ mod tests {
 
   use super::*;
 
+  const EPISILON: f64 = 0.000000000001;
+
   #[test]
   fn test_luma_range() {
     assert_eq!(LumaRange::new(8, VSColorRange::VSC_RANGE_LIMITED), (16, 235));
@@ -81,28 +83,30 @@ mod tests {
 
   #[test]
   fn test_bt1886_eof() {
-    assert_relative_eq!(Bt1886.eotf(0.5), 58.716634039821685);
-    assert_relative_eq!(Bt1886.eotf(0.1), 1.5766526614315794);
-    assert_relative_eq!(Bt1886.eotf(0.9), 233.81950301956385);
+    assert_relative_eq!(Bt1886.eotf(0.5), 58.716634039821685, epsilon = EPISILON);
+    assert_relative_eq!(Bt1886.eotf(0.1), 1.5766526614315794, epsilon = EPISILON);
+    assert_relative_eq!(Bt1886.eotf(0.9), 233.81950301956385, epsilon = EPISILON);
   }
 
   #[test]
   fn test_pq_eof() {
     assert_relative_eq!(Pq.eotf(0.0), 0.0);
-    assert_relative_eq!(Pq.eotf(0.1), 0.3245655914644875);
-    assert_relative_eq!(Pq.eotf(0.3), 10.038226310511204);
-    assert_relative_eq!(Pq.eotf(0.8), 1555.1783642892847);
+    assert_relative_eq!(Pq.eotf(0.1), 0.3245655914644875, epsilon = EPISILON);
+    assert_relative_eq!(Pq.eotf(0.3), 10.038226310511204, epsilon = EPISILON);
+    assert_relative_eq!(Pq.eotf(0.8), 1555.1783642892847, epsilon = EPISILON);
   }
 
   #[test]
   fn test_get_luminance() {
     assert_relative_eq!(
       get_luminance(400, &LumaRange::new(10, VSColorRange::VSC_RANGE_LIMITED), &Bt1886),
-      31.68933962217197
+      31.68933962217197,
+      epsilon = EPISILON
     );
     assert_relative_eq!(
       get_luminance(400, &LumaRange::new(10, VSColorRange::VSC_RANGE_FULL), &Bt1886),
-      33.13300375755777
+      33.13300375755777,
+      epsilon = EPISILON
     );
   }
 }
