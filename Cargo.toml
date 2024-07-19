@@ -1,0 +1,30 @@
+[package]
+name = "cambi"
+version = "0.0.0"
+license = "MIT"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+const-str = "0.5.7"
+kolor-64 = "0.1.9"
+num-traits = "0.2.19"
+vapoursynth4-rs = { git = "https://github.com/inflation/vapoursynth4-rs", rev = "7c1b3b8cd3c3b7b4c7d09e174cd43fb853128ec8" }
+
+[dev-dependencies]
+approx = "0.5.1"
+criterion = { version = "0.5.1", features = ["html_reports"] }
+
+[[bench]]
+name = "ceil_log2"
+harness = false
+
+[[bench]]
+name = "pq_eotf"
+harness = false
+
+[profile.release]
+codegen-units = 1
+lto = true
