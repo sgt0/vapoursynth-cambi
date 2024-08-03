@@ -20,6 +20,7 @@ cambi.Cambi(
     topk: float = 0.6,
     tvi_threshold: float = 0.019,
     max_log_contrast: int = 2,
+    eotf: int = 0,
     prop: str = "CAMBI",
 ) -> vs.VideoNode
 ```
@@ -35,6 +36,12 @@ property named `prop`.
 - `tvi_threshold` — Visibility threshold for luminance ΔL < tvi_threshold\*L_mean for BT.1886.
 - `max_log_contrast` — Maximum contrast in log luma level (2^max_log_contrast)
   at 10-bit. Default 2 is equivalent to 4 luma levels at 10-bit.
+- `eotf` — Electro-optical transfer function.
+  | Value | Description |
+  | ----- | ----------- |
+  | 0 | Determine from the `_Transfer` frame property. |
+  | 1 | ITU-R BT.1886. |
+  | 2 | Perceptual quantizer (SMPTE ST 2084). |
 - `prop` — Name of the frame property to store the CAMBI score in.
 
 ## Benchmark

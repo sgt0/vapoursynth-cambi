@@ -31,38 +31,32 @@ pub fn normalize_range(sample: i32, range: &LumaRange) -> f64 {
 }
 
 /// Electro-optical transfer function.
-pub trait Eotf {
-  fn eotf(&self, v: f64) -> f64;
+#[derive(Debug)]
+pub enum Eotf {
+  /// ITU-R BT.1886.
+  Bt1886,
+
+  /// Perceptual quantizer (SMPTE ST 2084).
+  Pq,
 }
 
 const BT1886_GAMMA: f64 = 2.4;
 const BT1886_LB: f64 = 0.01;
 const BT1886_LW: f64 = 300.0;
 
-/// ITU-R BT.1886.
-pub struct Bt1886;
-
-impl Eotf for Bt1886 {
-  fn eotf(&self, v: f64) -> f64 {
-    let a = (BT1886_LW.powf(1.0 / BT1886_GAMMA) - BT1886_LB.powf(1.0 / BT1886_GAMMA)).powf(BT1886_GAMMA);
-    let b =
-      BT1886_LB.powf(1.0 / BT1886_GAMMA) / (BT1886_LW.powf(1.0 / BT1886_GAMMA) - BT1886_LB.powf(1.0 / BT1886_GAMMA));
-    a * f64::max(v + b, 0.0).powf(BT1886_GAMMA)
-  }
+fn bt_1866_eotf(v: f64) -> f64 {
+  let a = (BT1886_LW.powf(1.0 / BT1886_GAMMA) - BT1886_LB.powf(1.0 / BT1886_GAMMA)).powf(BT1886_GAMMA);
+  let b =
+    BT1886_LB.powf(1.0 / BT1886_GAMMA) / (BT1886_LW.powf(1.0 / BT1886_GAMMA) - BT1886_LB.powf(1.0 / BT1886_GAMMA));
+  a * f64::max(v + b, 0.0).powf(BT1886_GAMMA)
 }
 
-/// Perceptual quantizer (SMPTE ST 2084).
-pub struct Pq;
-
-impl Eotf for Pq {
-  fn eotf(&self, v: f64) -> f64 {
-    ST_2084_PQ_eotf_float(v)
-  }
-}
-
-pub fn get_luminance<T: Eotf>(sample: i32, luma_range: &LumaRange, eotf: &T) -> f64 {
+pub fn get_luminance(sample: i32, luma_range: &LumaRange, eotf: &Eotf) -> f64 {
   let normalized = normalize_range(sample, luma_range);
-  eotf.eotf(normalized)
+  match eotf {
+    Eotf::Bt1886 => bt_1866_eotf(normalized),
+    Eotf::Pq => ST_2084_PQ_eotf_float(normalized),
+  }
 }
 
 #[cfg(test)]
@@ -83,28 +77,30 @@ mod tests {
 
   #[test]
   fn test_bt1886_eof() {
-    assert_relative_eq!(Bt1886.eotf(0.5), 58.716634039821685, epsilon = EPISILON);
-    assert_relative_eq!(Bt1886.eotf(0.1), 1.5766526614315794, epsilon = EPISILON);
-    assert_relative_eq!(Bt1886.eotf(0.9), 233.81950301956385, epsilon = EPISILON);
+    assert_relative_eq!(bt_1866_eotf(0.5), 58.716634039821685, epsilon = EPISILON);
+    assert_relative_eq!(bt_1866_eotf(0.1), 1.5766526614315794, epsilon = EPISILON);
+    assert_relative_eq!(bt_1866_eotf(0.9), 233.81950301956385, epsilon = EPISILON);
   }
 
+  // Doesn't test our code, but this is here anyways to ensure that the output
+  // matches what libvmaf has.
   #[test]
   fn test_pq_eof() {
-    assert_relative_eq!(Pq.eotf(0.0), 0.0);
-    assert_relative_eq!(Pq.eotf(0.1), 0.3245655914644875, epsilon = EPISILON);
-    assert_relative_eq!(Pq.eotf(0.3), 10.038226310511204, epsilon = EPISILON);
-    assert_relative_eq!(Pq.eotf(0.8), 1555.1783642892847, epsilon = EPISILON);
+    assert_relative_eq!(ST_2084_PQ_eotf_float(0.0), 0.0);
+    assert_relative_eq!(ST_2084_PQ_eotf_float(0.1), 0.3245655914644875, epsilon = EPISILON);
+    assert_relative_eq!(ST_2084_PQ_eotf_float(0.3), 10.038226310511204, epsilon = EPISILON);
+    assert_relative_eq!(ST_2084_PQ_eotf_float(0.8), 1555.1783642892847, epsilon = EPISILON);
   }
 
   #[test]
   fn test_get_luminance() {
     assert_relative_eq!(
-      get_luminance(400, &LumaRange::new(10, VSColorRange::VSC_RANGE_LIMITED), &Bt1886),
+      get_luminance(400, &LumaRange::new(10, VSColorRange::VSC_RANGE_LIMITED), &Eotf::Bt1886),
       31.68933962217197,
       epsilon = EPISILON
     );
     assert_relative_eq!(
-      get_luminance(400, &LumaRange::new(10, VSColorRange::VSC_RANGE_FULL), &Bt1886),
+      get_luminance(400, &LumaRange::new(10, VSColorRange::VSC_RANGE_FULL), &Eotf::Bt1886),
       33.13300375755777,
       epsilon = EPISILON
     );

@@ -22,19 +22,19 @@ enum TviBisect {
   TooBig,
 }
 
-fn tvi_condition<T: Eotf>(sample: i32, diff: i32, tvi_threshold: f64, luma_range: &LumaRange, eotf: &T) -> bool {
+fn tvi_condition(sample: i32, diff: i32, tvi_threshold: f64, luma_range: &LumaRange, eotf: &Eotf) -> bool {
   let mean_luminance = get_luminance(sample, luma_range, eotf);
   let diff_luminance = get_luminance(sample + diff, luma_range, eotf);
   let delta_luminance = diff_luminance - mean_luminance;
   delta_luminance > tvi_threshold * mean_luminance
 }
 
-fn tvi_hard_threshold_condition<T: Eotf>(
+fn tvi_hard_threshold_condition(
   sample: i32,
   diff: i32,
   tvi_threshold: f64,
   luma_range: &LumaRange,
-  eotf: &T,
+  eotf: &Eotf,
 ) -> TviBisect {
   if !tvi_condition(sample, diff, tvi_threshold, luma_range, eotf) {
     return TviBisect::TooBig;
@@ -47,13 +47,7 @@ fn tvi_hard_threshold_condition<T: Eotf>(
   TviBisect::Correct
 }
 
-pub fn get_tvi_for_diff<T: Eotf>(
-  diff: i32,
-  tvi_threshold: f64,
-  bit_depth: i32,
-  luma_range: &LumaRange,
-  eotf: &T,
-) -> i32 {
+pub fn get_tvi_for_diff(diff: i32, tvi_threshold: f64, bit_depth: i32, luma_range: &LumaRange, eotf: &Eotf) -> i32 {
   let (mut foot, mut head) = (luma_range.foot, luma_range.head);
   head = head - diff - 1;
 
@@ -764,8 +758,6 @@ mod tests {
   use approx::assert_relative_eq;
   use vapoursynth4_rs::ffi::VSColorRange;
 
-  use crate::luminance::Bt1886;
-
   use super::*;
 
   const EPSILON: f32 = 0.000000000001;
@@ -852,19 +844,19 @@ mod tests {
   fn test_tvi_hard_threshold_condition() {
     let limited = LumaRange::new(10, VSColorRange::VSC_RANGE_LIMITED);
     assert_eq!(
-      tvi_hard_threshold_condition(177, 1, 0.019, &limited, &Bt1886),
+      tvi_hard_threshold_condition(177, 1, 0.019, &limited, &Eotf::Bt1886),
       TviBisect::TooSmall
     );
     assert_eq!(
-      tvi_hard_threshold_condition(178, 1, 0.019, &limited, &Bt1886),
+      tvi_hard_threshold_condition(178, 1, 0.019, &limited, &Eotf::Bt1886),
       TviBisect::Correct
     );
     assert_eq!(
-      tvi_hard_threshold_condition(179, 1, 0.019, &limited, &Bt1886),
+      tvi_hard_threshold_condition(179, 1, 0.019, &limited, &Eotf::Bt1886),
       TviBisect::TooBig
     );
     assert_eq!(
-      tvi_hard_threshold_condition(305, 2, 0.019, &limited, &Bt1886),
+      tvi_hard_threshold_condition(305, 2, 0.019, &limited, &Eotf::Bt1886),
       TviBisect::Correct
     );
   }
@@ -876,7 +868,7 @@ mod tests {
       1,
       0.019,
       &LumaRange::new(10, VSColorRange::VSC_RANGE_LIMITED),
-      &Bt1886
+      &Eotf::Bt1886
     ));
 
     assert!(tvi_condition(
@@ -884,7 +876,7 @@ mod tests {
       1,
       0.019,
       &LumaRange::new(10, VSColorRange::VSC_RANGE_LIMITED),
-      &Bt1886
+      &Eotf::Bt1886
     ));
 
     assert!(!tvi_condition(
@@ -892,7 +884,7 @@ mod tests {
       1,
       0.019,
       &LumaRange::new(10, VSColorRange::VSC_RANGE_LIMITED),
-      &Bt1886
+      &Eotf::Bt1886
     ));
 
     assert!(tvi_condition(
@@ -900,7 +892,7 @@ mod tests {
       4,
       0.01,
       &LumaRange::new(10, VSColorRange::VSC_RANGE_LIMITED),
-      &Bt1886
+      &Eotf::Bt1886
     ));
 
     assert!(tvi_condition(
@@ -908,7 +900,7 @@ mod tests {
       4,
       0.01,
       &LumaRange::new(10, VSColorRange::VSC_RANGE_LIMITED),
-      &Bt1886
+      &Eotf::Bt1886
     ));
   }
 }

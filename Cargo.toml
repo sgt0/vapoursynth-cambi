@@ -10,6 +10,7 @@ crate-type = ["cdylib"]
 [dependencies]
 const-str = "0.5.7"
 kolor-64 = "0.1.9"
+num-derive = "0.4.2"
 num-traits = "0.2.19"
 vapoursynth4-rs = { git = "https://github.com/inflation/vapoursynth4-rs", rev = "7c1b3b8cd3c3b7b4c7d09e174cd43fb853128ec8" }
 

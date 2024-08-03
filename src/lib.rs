@@ -6,6 +6,9 @@
 #![allow(clippy::too_many_arguments)]
 #![allow(clippy::unreadable_literal)]
 
+#[macro_use]
+extern crate num_derive;
+
 mod cambi;
 mod luminance;
 
@@ -13,11 +16,12 @@ use std::ffi::{c_void, CStr, CString};
 
 use cambi::{adjust_window_size, cambi_score, get_tvi_for_diff, CambiParams, ContrastArrays};
 use const_str::cstr;
-use luminance::{Bt1886, LumaRange};
+use luminance::{Eotf, LumaRange};
+use num_traits::FromPrimitive;
 use vapoursynth4_rs::{
   core::CoreRef,
   declare_plugin,
-  ffi::VSColorRange,
+  ffi::{VSColorRange, VSTransferCharacteristics},
   frame::{Frame, FrameContext, VideoFrame},
   key,
   map::{AppendMode, KeyStr, MapMut, MapRef, Value},
@@ -25,6 +29,18 @@ use vapoursynth4_rs::{
   utils::is_constant_video_format,
   SampleType,
 };
+
+#[derive(FromPrimitive)]
+enum EotfParam {
+  /// Automatically determine the EOTF from frame props.
+  Auto = 0,
+
+  /// ITU-R BT.1886.
+  Bt1886 = 1,
+
+  /// Perceptual quantizer (SMPTE ST 2084).
+  Pq = 2,
+}
 
 /// Contrast Aware Multiscale Banding Index (CAMBI) as a VapourSynth plugin.
 #[allow(clippy::doc_markdown)]
@@ -34,6 +50,9 @@ struct CambiFilter {
   /// CAMBI parameters that are constant across frames.
   cambi_params: CambiParams,
   tvi_threshold: f64,
+
+  /// Electro-optical transfer function.
+  eotf: EotfParam,
 
   /// Name of the frame property to store the CAMBI score in.
   prop: CString,
@@ -62,6 +81,12 @@ impl Filter for CambiFilter {
       return Err(cstr!("cambi: only constant format 10-bit integer input is supported."));
     }
 
+    let Some(eotf) = EotfParam::from_i64(input.get_int(key!("eotf"), 0).unwrap_or(0)) else {
+      return Err(cstr!(
+        "cambi: unrecognized `eotf` parameter value; expected one of 0, 1, or 2."
+      ));
+    };
+
     // CAMBI parameters.
     let window_size = adjust_window_size(
       input.get_int(key!("window_size"), 0).unwrap_or(65) as u16,
@@ -84,6 +109,7 @@ impl Filter for CambiFilter {
         width: vi.width,
         height: vi.height,
       },
+      eotf,
       prop: CString::new(input.get_utf8(key!("prop"), 0).unwrap_or("CAMBI"))
         .expect("cambi: should be able to create a C-compatible prop name."),
     };
@@ -132,6 +158,18 @@ impl Filter for CambiFilter {
           0 => VSColorRange::VSC_RANGE_FULL,
           _ => VSColorRange::VSC_RANGE_LIMITED, // TODO: throw on unknown color range
         };
+
+        let eotf = match self.eotf {
+          EotfParam::Auto => match props
+            .get_int_saturated(key!("_Transfer"), 0)
+            .unwrap_or(VSTransferCharacteristics::VSC_TRANSFER_UNSPECIFIED as i32)
+          {
+            x if x == VSTransferCharacteristics::VSC_TRANSFER_ST2084 as i32 => Eotf::Pq,
+            _ => Eotf::Bt1886,
+          },
+          EotfParam::Bt1886 => Eotf::Bt1886,
+          EotfParam::Pq => Eotf::Pq,
+        };
         let mut tvi_for_diff = Vec::<u16>::with_capacity(self.cambi_params.num_diffs as usize);
         for d in 0..self.cambi_params.num_diffs {
           tvi_for_diff.push(
@@ -140,7 +178,7 @@ impl Filter for CambiFilter {
               self.tvi_threshold,
               format.bits_per_sample,
               &LumaRange::new(format.bits_per_sample, range),
-              &Bt1886, // TODO: remove hardcoded BT.1886.
+              &eotf,
             ) + self.cambi_params.num_diffs) as u16,
           );
         }
@@ -172,6 +210,7 @@ impl Filter for CambiFilter {
     topk:float:opt;\
     tvi_threshold:float:opt;\
     max_log_contrast:int:opt;\
+    eotf:int:opt;\
     prop:data:opt;"
   );
   const RETURN_TYPE: &'static CStr = cstr!("clip:vnode;");
