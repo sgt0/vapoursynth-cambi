@@ -39,7 +39,7 @@ jobs:
           RUSTFLAGS: -C target-cpu=${{ matrix.target-cpu }}
 
       - name: Attest build provenance
-        uses: actions/attest-build-provenance@v1.3.3
+        uses: actions/attest-build-provenance@v1.4.1
         if: ${{ github.event_name == 'push' }}
         with:
           subject-path: target/${{ matrix.target }}/release/*cambi.${{ matrix.ext }}
