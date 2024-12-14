@@ -24,7 +24,7 @@ use vapoursynth4_rs::{
   ffi::{VSColorRange, VSTransferCharacteristics},
   frame::{Frame, FrameContext, VideoFrame},
   key,
-  map::{AppendMode, KeyStr, MapMut, MapRef, Value},
+  map::{AppendMode, KeyStr, MapRef, Value},
   node::{ActivationReason, Dependencies, Filter, FilterDependency, Node, RequestPattern, VideoNode},
   utils::is_constant_video_format,
   SampleType,
@@ -65,11 +65,11 @@ impl Filter for CambiFilter {
 
   fn create(
     input: MapRef<'_>,
-    output: MapMut<'_>,
+    output: MapRef<'_>,
     _data: Option<Box<Self::FilterData>>,
     mut core: CoreRef,
   ) -> Result<(), Self::Error> {
-    let Ok(node) = input.get_video_node(key!("clip"), 0) else {
+    let Ok(node) = input.get_video_node(key!(c"clip"), 0) else {
       return Err(cstr!("cambi: failed to get clip."));
     };
 
@@ -81,7 +81,7 @@ impl Filter for CambiFilter {
       return Err(cstr!("cambi: only constant format 10-bit integer input is supported."));
     }
 
-    let Some(eotf) = EotfParam::from_i64(input.get_int(key!("eotf"), 0).unwrap_or(0)) else {
+    let Some(eotf) = EotfParam::from_i64(input.get_int(key!(c"eotf"), 0).unwrap_or(0)) else {
       return Err(cstr!(
         "cambi: unrecognized `eotf` parameter value; expected one of 0, 1, or 2."
       ));
@@ -89,16 +89,16 @@ impl Filter for CambiFilter {
 
     // CAMBI parameters.
     let window_size = adjust_window_size(
-      input.get_int(key!("window_size"), 0).unwrap_or(65) as u16,
+      input.get_int(key!(c"window_size"), 0).unwrap_or(65) as u16,
       vi.width,
       vi.height,
     );
-    let topk = input.get_float(key!("window_size"), 0).unwrap_or(0.6) as f32;
-    let tvi_threshold = input.get_float(key!("tvi_threshold "), 0).unwrap_or(0.019);
-    let max_log_contrast = input.get_int(key!("max_log_contrast "), 0).unwrap_or(2);
+    let topk = input.get_float(key!(c"window_size"), 0).unwrap_or(0.6) as f32;
+    let tvi_threshold = input.get_float(key!(c"tvi_threshold"), 0).unwrap_or(0.019);
+    let max_log_contrast = input.get_int(key!(c"max_log_contrast"), 0).unwrap_or(2);
     let num_diffs: i32 = 1 << max_log_contrast;
     let contrast_arrays = ContrastArrays::new(num_diffs);
-    let mut filter = Self {
+    let filter = Self {
       node,
       tvi_threshold,
       cambi_params: CambiParams {
@@ -110,12 +110,12 @@ impl Filter for CambiFilter {
         height: vi.height,
       },
       eotf,
-      prop: CString::new(input.get_utf8(key!("prop"), 0).unwrap_or("CAMBI"))
+      prop: CString::new(input.get_utf8(key!(c"prop"), 0).unwrap_or("CAMBI"))
         .expect("cambi: should be able to create a C-compatible prop name."),
     };
 
     let deps = [FilterDependency {
-      source: filter.node.as_mut_ptr(),
+      source: filter.node.as_ptr(),
       request_pattern: RequestPattern::StrictSpatial,
     }];
 
@@ -152,7 +152,7 @@ impl Filter for CambiFilter {
         // improvement, which is probably not worth the added limitation.
         let props = src.properties().expect("cambi: should be able to get frame props.");
         let range = match props
-          .get_int_saturated(key!("_ColorRange"), 0)
+          .get_int_saturated(key!(c"_ColorRange"), 0)
           .unwrap_or(VSColorRange::VSC_RANGE_LIMITED as i32)
         {
           0 => VSColorRange::VSC_RANGE_FULL,
@@ -161,7 +161,7 @@ impl Filter for CambiFilter {
 
         let eotf = match self.eotf {
           EotfParam::Auto => match props
-            .get_int_saturated(key!("_Transfer"), 0)
+            .get_int_saturated(key!(c"_Transfer"), 0)
             .unwrap_or(VSTransferCharacteristics::VSC_TRANSFER_UNSPECIFIED as i32)
           {
             x if x == VSTransferCharacteristics::VSC_TRANSFER_ST2084 as i32 => Eotf::Pq,
@@ -217,9 +217,9 @@ impl Filter for CambiFilter {
 }
 
 declare_plugin!(
-  "sgt.cambi",
-  "cambi",
-  "Contrast Aware Multiscale Banding Index (CAMBI).",
+  c"sgt.cambi",
+  c"cambi",
+  c"Contrast Aware Multiscale Banding Index (CAMBI).",
   (1, 1),
   VAPOURSYNTH_API_VERSION,
   0,
