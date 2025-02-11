@@ -60,7 +60,7 @@ pub fn get_tvi_for_diff(diff: i32, tvi_threshold: f64, bit_depth: i32, luma_rang
       return foot;
     }
     TviBisect::TooSmall => { /* fallthrough */ }
-  };
+  }
 
   let tvi_bisect = tvi_hard_threshold_condition(head, diff, tvi_threshold, luma_range, eotf);
   match tvi_bisect {
@@ -71,7 +71,7 @@ pub fn get_tvi_for_diff(diff: i32, tvi_threshold: f64, bit_depth: i32, luma_rang
       return head;
     }
     TviBisect::TooBig => { /* fallthrough */ }
-  };
+  }
 
   // Bisect.
   loop {
