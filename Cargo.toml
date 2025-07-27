@@ -8,7 +8,7 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-const-str = "0.6.3"
+const-str = "0.6.4"
 kolor-64 = "0.1.9"
 num-derive = "0.4.2"
 num-traits = "0.2.19"
