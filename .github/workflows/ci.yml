@@ -45,7 +45,7 @@ jobs:
           subject-path: target/${{ matrix.target }}/release/*cambi.${{ matrix.ext }}
 
       - name: Upload
-        uses: actions/upload-artifact@v5.0.0
+        uses: actions/upload-artifact@v6.0.0
         with:
           name: cambi-${{ matrix.target }}-${{ matrix.target-cpu }}
           path: target/${{ matrix.target }}/release/*cambi.${{ matrix.ext }}
