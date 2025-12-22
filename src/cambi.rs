@@ -3,10 +3,10 @@ use std::{
   ops::{AddAssign, SubAssign},
 };
 
-use num_traits::{clamp, One};
+use num_traits::{One, clamp};
 use vapoursynth4_rs::frame::VideoFrame;
 
-use crate::luminance::{get_luminance, Eotf, LumaRange};
+use crate::luminance::{Eotf, LumaRange, get_luminance};
 
 const CONTRAST_WEIGHTS: [u16; 32] = [
   1, 2, 3, 4, 4, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,

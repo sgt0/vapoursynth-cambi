@@ -12,13 +12,14 @@ extern crate num_derive;
 mod cambi;
 mod luminance;
 
-use std::ffi::{c_void, CStr, CString};
+use std::ffi::{CStr, CString, c_void};
 
-use cambi::{adjust_window_size, cambi_score, get_tvi_for_diff, CambiParams, ContrastArrays};
+use cambi::{CambiParams, ContrastArrays, adjust_window_size, cambi_score, get_tvi_for_diff};
 use const_str::cstr;
 use luminance::{Eotf, LumaRange};
 use num_traits::FromPrimitive;
 use vapoursynth4_rs::{
+  SampleType,
   core::CoreRef,
   declare_plugin,
   ffi::{VSColorRange, VSTransferCharacteristics},
@@ -27,7 +28,6 @@ use vapoursynth4_rs::{
   map::{AppendMode, KeyStr, MapRef, Value},
   node::{ActivationReason, Dependencies, Filter, FilterDependency, Node, RequestPattern, VideoNode},
   utils::is_constant_video_format,
-  SampleType,
 };
 
 #[derive(FromPrimitive)]
