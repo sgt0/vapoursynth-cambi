@@ -1,4 +1,4 @@
-use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
+use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 use kolor_64::details::transform::ST_2084_PQ_eotf_float;
 
 const PQ_M_1: f64 = 0.1593017578125;

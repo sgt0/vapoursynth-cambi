@@ -84,7 +84,7 @@ Summary
 
 ## Build
 
-Rust v1.85.0-nightly and cargo may be used to build the project. Older versions
+Rust v1.93.0-nightly and cargo may be used to build the project. Older versions
 will likely work fine but they aren't explicitly supported.
 
 ```bash
