@@ -187,7 +187,7 @@ fn filter_mode(image: &mut VideoFrame, width: i32, height: i32, buffer: &mut [u1
           *data.offset((i * stride as i32 + j - 1) as isize),
           *data.offset((i * stride as i32 + j) as isize),
           *data.offset((i * stride as i32 + j + 1) as isize),
-        ) as u16;
+        );
       }
     }
     unsafe {
