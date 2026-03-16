@@ -683,7 +683,7 @@ const fn get_pixels_in_window(window_length: u16) -> u16 {
 fn weight_scores_per_scale(scores_per_scale: &[f64], normalization: u16) -> f64 {
   let mut score: f64 = 0.0;
   for scale in 0..NUM_SCALES {
-    score += scores_per_scale[scale] * f64::from(SCALE_WEIGHTS[scale]);
+    score = scores_per_scale[scale].mul_add(f64::from(SCALE_WEIGHTS[scale]), score);
   }
   score / f64::from(normalization)
 }
