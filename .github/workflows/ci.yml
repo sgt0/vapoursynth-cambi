@@ -21,6 +21,7 @@ permissions:
 
 jobs:
   build-release:
+    name: build-release (${{ matrix.target }})
     permissions:
       id-token: write
       contents: read
@@ -28,8 +29,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        target-cpu: [x86-64, raptorlake, znver4]
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
@@ -37,8 +36,8 @@ jobs:
           - os: windows-latest
             target: x86_64-pc-windows-gnu
             ext: dll
-          - os: macos-latest
-            target: x86_64-apple-darwin
+          - os: macos-26
+            target: aarch64-apple-darwin
             ext: dylib
     runs-on: ${{ matrix.os }}
     steps:
@@ -56,8 +55,6 @@ jobs:
 
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
-        env:
-          RUSTFLAGS: -C target-cpu=${{ matrix.target-cpu }}
 
       - name: Attest build provenance
         uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
@@ -68,41 +65,18 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: cambi-${{ matrix.target }}-${{ matrix.target-cpu }}
+          name: cambi-${{ matrix.target }}
           path: target/${{ matrix.target }}/release/*cambi.${{ matrix.ext }}
 
-  clippy:
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Setup Rust
-        uses: actions-rust-lang/setup-rust-toolchain@46268bd060767258de96ed93c1251119784f2ab6 # v1.16.1
-        with:
-          components: clippy
-          toolchain: nightly
-
-      - name: Run Clippy
-        run: cargo clippy
-
-  rustfmt:
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Setup Rust
-        uses: actions-rust-lang/setup-rust-toolchain@46268bd060767258de96ed93c1251119784f2ab6 # v1.16.1
-        with:
-          components: rustfmt
-          toolchain: nightly
-
-      - name: Run rustfmt
-        uses: actions-rust-lang/rustfmt@4066006ec54a31931b9b1fddfd38f2fdf2d27143 # v1.1.2
+  build-release-binaries:
+    uses: ./.github/workflows/build-release-binaries.yml
 
   test:
-    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-26, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -119,3 +93,81 @@ jobs:
 
       - name: Run tests
         run: cargo nextest run --all-features --workspace
+
+
+  clippy:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@46268bd060767258de96ed93c1251119784f2ab6 # v1.16.1
+        with:
+          components: clippy
+          toolchain: nightly
+
+      - name: Run Clippy
+        run: cargo clippy --all-targets --workspace
+
+  rustfmt:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@46268bd060767258de96ed93c1251119784f2ab6 # v1.16.1
+        with:
+          components: rustfmt
+          toolchain: nightly
+
+      - name: Run rustfmt
+        uses: actions-rust-lang/rustfmt@4066006ec54a31931b9b1fddfd38f2fdf2d27143 # v1.1.2
+
+  cargo-shear:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install cargo-shear
+        uses: taiki-e/install-action@213ccc1a076163c093f914550b94feb90fab916d # v2.79.2
+        with:
+          tool: cargo-shear
+
+      - run: cargo shear
+
+  ruff-check:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@46268bd060767258de96ed93c1251119784f2ab6 # v1.16.1
+        with:
+          toolchain: stable
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+
+      - name: ruff
+        run: uv run ruff check .
+
+  ruff-format:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@46268bd060767258de96ed93c1251119784f2ab6 # v1.16.1
+        with:
+          toolchain: nightly
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+
+      - name: ruff format
+        run: uv run ruff format --check .
