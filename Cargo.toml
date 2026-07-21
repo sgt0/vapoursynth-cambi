@@ -10,7 +10,7 @@ crate-type = ["cdylib"]
 [dependencies]
 const-str = "1.1.0"
 kolor-64 = "0.1.9"
-num-derive = "0.4.2"
+num-derive = "0.5.1"
 num-traits = "0.2.19"
 vapoursynth4-rs = "0.3.0"
 
