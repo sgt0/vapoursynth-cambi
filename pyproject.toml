@@ -11,7 +11,7 @@ dependencies = ["vapoursynth>=77"]
 
 [dependency-groups]
 dev = [
-    "ruff==0.15.22",
+    "ruff==0.16.0",
 ]
 
 [build-system]
