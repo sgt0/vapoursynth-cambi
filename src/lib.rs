@@ -93,7 +93,7 @@ impl Filter for CambiFilter {
       vi.width,
       vi.height,
     );
-    let topk = input.get_float(key!(c"window_size"), 0).unwrap_or(0.6) as f32;
+    let topk = input.get_float(key!(c"topk"), 0).unwrap_or(0.6) as f32;
     let tvi_threshold = input.get_float(key!(c"tvi_threshold"), 0).unwrap_or(0.019);
     let max_log_contrast = input.get_int(key!(c"max_log_contrast"), 0).unwrap_or(2);
     let num_diffs: i32 = 1 << max_log_contrast;
