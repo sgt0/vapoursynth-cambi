@@ -666,9 +666,8 @@ checksum = "e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75"
 
 [[package]]
 name = "vapoursynth4-rs"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ebb75c2210955363ce9d51a6e7bc1aeb8538e41b211510b0dae21aa84bdf96ff"
+version = "0.4.0"
+source = "git+https://github.com/inflation/vapoursynth4-rs?rev=3764fcf38a505b704c0982c23c92aa38d245370d#3764fcf38a505b704c0982c23c92aa38d245370d"
 dependencies = [
  "bon",
  "thiserror",
@@ -678,8 +677,7 @@ dependencies = [
 [[package]]
 name = "vapoursynth4-sys"
 version = "0.3.2+R73"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0431c05a69a0f11ec443b4b70eda78080df05b5ac797d7cc00f37e9f94dc8995"
+source = "git+https://github.com/inflation/vapoursynth4-rs?rev=3764fcf38a505b704c0982c23c92aa38d245370d#3764fcf38a505b704c0982c23c92aa38d245370d"
 
 [[package]]
 name = "walkdir"
