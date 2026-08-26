@@ -6,16 +6,9 @@ detection algorithm without a dependency on libvmaf.
 
 ## Install
 
-Via [vsrepo][]:
-
 ```
-vsrepo install cambi
+pip install vapoursynth-cambi
 ```
-
-Or manually on Windows: download a release from the [Releases][] page and unzip
-`cambi.dll` into a [plugins directory][plugin-autoloading]. There are separate
-artifacts for Raptor Lake (`*-raptorlake.zip`) and AMD Zen 4 (`*-znver4.zip`)
-CPUs which may or may not have better performance than the plain x86_64 build.
 
 ## API
 
@@ -91,7 +84,7 @@ Summary
 
 ## Build
 
-Rust v1.93.0-nightly and cargo may be used to build the project. Older versions
+Rust v1.100.0-nightly and cargo may be used to build the project. Older versions
 will likely work fine but they aren't explicitly supported.
 
 ```bash
@@ -110,6 +103,3 @@ $ RUSTFLAGS="-C target-cpu=native" cargo build --release
 
 [CAMBI]: https://github.com/Netflix/vmaf/blob/v3.0.0/resource/doc/papers/CAMBI_PCS2021.pdf
 [VapourSynth]: https://www.vapoursynth.com
-[vsrepo]: https://github.com/vapoursynth/vsrepo
-[Releases]: https://github.com/sgt0/vapoursynth-cambi/releases
-[plugin-autoloading]: https://www.vapoursynth.com/doc/installation.html#plugin-autoloading
