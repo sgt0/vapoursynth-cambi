@@ -57,3 +57,11 @@ MACOSX_DEPLOYMENT_TARGET = "13.0"
 [tool.cibuildwheel.windows]
 archs = ["AMD64"]
 before-all = "rustup target add x86_64-pc-windows-msvc"
+
+[tool.uv]
+cache-keys = [
+    { file = "src/**/*.rs" },
+    { file = "Cargo.lock" },
+    { file = "Cargo.toml" },
+    { file = "pyproject.toml" },
+]
