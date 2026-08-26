@@ -12,7 +12,7 @@ const CONTRAST_WEIGHTS: [u16; 32] = [
   1, 2, 3, 4, 4, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
 ];
 const MASK_FILTER_SIZE: u16 = 7;
-const NUM_SCALES: usize = 5;
+pub const NUM_SCALES: usize = 5;
 const SCALE_WEIGHTS: [u16; NUM_SCALES] = [16, 8, 4, 2, 1];
 
 #[derive(Debug, PartialEq)]
@@ -707,7 +707,30 @@ pub struct CambiParams {
   pub height: i32,
 }
 
-pub fn cambi_score(image: &mut VideoFrame, mask: &mut VideoFrame, tvi_for_diff: &[u16], params: &CambiParams) -> f64 {
+/// Per-pixel c-score map for one scale, at that scale's decimated resolution.
+pub struct ScaleCValues {
+  pub c_values: Vec<f32>,
+  pub width: i32,
+  pub height: i32,
+}
+
+/// Result of a CAMBI computation for one frame.
+pub struct CambiResult {
+  /// Final CAMBI score.
+  pub score: f64,
+
+  /// Per-scale c-score maps, one entry per scale. `Some` only when
+  /// requested via `collect_c_values`.
+  pub scale_c_values: Option<Vec<ScaleCValues>>,
+}
+
+pub fn cambi_score(
+  image: &mut VideoFrame,
+  mask: &mut VideoFrame,
+  tvi_for_diff: &[u16],
+  params: &CambiParams,
+  collect_c_values: bool,
+) -> CambiResult {
   let width = params.width;
   let height = params.height;
 
@@ -720,6 +743,7 @@ pub fn cambi_score(image: &mut VideoFrame, mask: &mut VideoFrame, tvi_for_diff: 
   let mut filter_mode_buffer = vec![0; (3 * width) as usize];
 
   let mut scores_per_scale = vec![0.0; NUM_SCALES];
+  let mut scale_c_values = collect_c_values.then(|| Vec::with_capacity(NUM_SCALES));
 
   let mut scaled_width = width;
   let mut scaled_height = height;
@@ -747,10 +771,21 @@ pub fn cambi_score(image: &mut VideoFrame, mask: &mut VideoFrame, tvi_for_diff: 
       scaled_height,
     );
 
+    if let Some(out) = &mut scale_c_values {
+      out.push(ScaleCValues {
+        c_values: c_values.clone(),
+        width: scaled_width,
+        height: scaled_height,
+      });
+    }
+
     *scores = spatial_pooling(&mut c_values, topk, scaled_width, scaled_height);
   }
 
-  weight_scores_per_scale(&scores_per_scale, get_pixels_in_window(window_size))
+  CambiResult {
+    score: weight_scores_per_scale(&scores_per_scale, get_pixels_in_window(window_size)),
+    scale_c_values,
+  }
 }
 
 #[cfg(test)]
