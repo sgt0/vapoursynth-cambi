@@ -28,6 +28,8 @@ cambi.Cambi(
     max_log_contrast: int = 2,
     eotf: int = 0,
     prop: str = "CAMBI",
+    scores: bool = False,
+    scaling: float = 1.0 / window_size,
 ) -> vs.VideoNode
 ```
 
@@ -49,6 +51,11 @@ property named `prop`.
   | 1 | ITU-R BT.1886. |
   | 2 | Perceptual quantizer (SMPTE ST 2084). |
 - `prop` — Name of the frame property to store the CAMBI score in.
+- `scores` — When `True`, attach the per-pixel c-score map for each scale as a
+  GRAYS `VideoFrame` in frame properties `CAMBI_SCALE0` through `CAMBI_SCALE4`.
+- `scaling` — Factor multiplied into every c-value written to the score map
+  frames. By default uses the raw `window_size`. Only meaningful when
+  `scores=True`.
 
 ## Benchmark
 

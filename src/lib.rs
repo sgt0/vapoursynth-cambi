@@ -14,12 +14,13 @@ mod luminance;
 
 use std::ffi::{CStr, CString, c_void};
 
-use cambi::{CambiParams, ContrastArrays, adjust_window_size, cambi_score, get_tvi_for_diff};
+use cambi::{CambiParams, CambiResult, ContrastArrays, adjust_window_size, cambi_score, get_tvi_for_diff};
 use const_str::cstr;
 use luminance::{Eotf, LumaRange};
 use num_traits::FromPrimitive;
+use vapours::frame::VapoursVideoFrame;
 use vapoursynth4_rs::{
-  SampleType,
+  ColorFamily, SampleType,
   core::CoreRef,
   declare_plugin,
   ffi::{VSColorRange, VSTransferCharacteristics},
@@ -56,6 +57,12 @@ struct CambiFilter {
 
   /// Name of the frame property to store the CAMBI score in.
   prop: CString,
+
+  /// Whether to store per-scale c-score frames as frame properties.
+  scores: bool,
+
+  /// Scaling factor applied to c-scores for each scale.
+  scaling: f32,
 }
 
 impl Filter for CambiFilter {
@@ -88,16 +95,17 @@ impl Filter for CambiFilter {
     };
 
     // CAMBI parameters.
-    let window_size = adjust_window_size(
-      input.get_int(key!(c"window_size"), 0).unwrap_or(65) as u16,
-      vi.width,
-      vi.height,
-    );
+    let window_size_param = input.get_int(key!(c"window_size"), 0).unwrap_or(65) as u16;
+    let window_size = adjust_window_size(window_size_param, vi.width, vi.height);
     let topk = input.get_float(key!(c"topk"), 0).unwrap_or(0.6) as f32;
     let tvi_threshold = input.get_float(key!(c"tvi_threshold"), 0).unwrap_or(0.019);
     let max_log_contrast = input.get_int(key!(c"max_log_contrast"), 0).unwrap_or(2);
     let num_diffs: i32 = 1 << max_log_contrast;
     let contrast_arrays = ContrastArrays::new(num_diffs);
+    let scores = input.get_int(key!(c"scores"), 0).unwrap_or(0) != 0;
+    let scaling = input
+      .get_float(key!(c"scaling"), 0)
+      .unwrap_or_else(|_| 1.0 / f64::from(window_size_param)) as f32;
     let filter = Self {
       node,
       tvi_threshold,
@@ -112,6 +120,8 @@ impl Filter for CambiFilter {
       eotf,
       prop: CString::new(input.get_utf8(key!(c"prop"), 0).unwrap_or("CAMBI"))
         .expect("cambi: should be able to create a C-compatible prop name."),
+      scores,
+      scaling,
     };
 
     let deps = [FilterDependency {
@@ -183,11 +193,12 @@ impl Filter for CambiFilter {
           );
         }
 
-        let score = cambi_score(
+        let CambiResult { score, scale_c_values } = cambi_score(
           &mut core.copy_frame(&src),
           &mut core.copy_frame(&src),
           &tvi_for_diff,
           &self.cambi_params,
+          self.scores,
         );
 
         let mut dst = core.copy_frame(&src);
@@ -195,6 +206,29 @@ impl Filter for CambiFilter {
         props
           .set(KeyStr::from_cstr(&self.prop), Value::Float(score), AppendMode::Replace)
           .expect("cambi: should be able to set frame prop.");
+
+        if let Some(scales) = scale_c_values {
+          let grays = core.query_video_format(ColorFamily::Gray, SampleType::Float, 32, 0, 0);
+          for (i, scale) in scales.into_iter().enumerate() {
+            let mut frame = core.new_video_frame(&grays, scale.width, scale.height, Some(&src));
+            let stride = frame.stride(0) as usize / size_of::<f32>();
+            let plane = frame.as_mut_slice::<f32>(0);
+            for (dst_row, src_row) in plane
+              .chunks_exact_mut(stride)
+              .zip(scale.c_values.chunks_exact(scale.width as usize))
+            {
+              for (dst, &c) in dst_row.iter_mut().zip(src_row) {
+                *dst = c * self.scaling;
+              }
+            }
+            let name = CString::new(format!("CAMBI_SCALE{i}"))
+              .expect("cambi: should be able to create a C-compatible prop name.");
+            props
+              .set(KeyStr::from_cstr(&name), Value::VideoFrame(frame), AppendMode::Replace)
+              .expect("cambi: should be able to set frame prop.");
+          }
+        }
+
         return Ok(Some(dst));
       }
       ActivationReason::Error => {}
@@ -211,7 +245,9 @@ impl Filter for CambiFilter {
     tvi_threshold:float:opt;\
     max_log_contrast:int:opt;\
     eotf:int:opt;\
-    prop:data:opt;"
+    prop:data:opt;\
+    scores:int:opt;\
+    scaling:float:opt;"
   );
   const RETURN_TYPE: &'static CStr = cstr!("clip:vnode;");
 }
