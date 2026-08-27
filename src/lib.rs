@@ -256,7 +256,7 @@ declare_plugin!(
   c"sgt.cambi",
   c"cambi",
   c"Contrast Aware Multiscale Banding Index (CAMBI).",
-  (1, 3),
+  (1, 4),
   VAPOURSYNTH_API_VERSION,
   0,
   (CambiFilter, None)
