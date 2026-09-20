@@ -84,7 +84,7 @@ dependencies = [
  "const-str",
  "criterion",
  "kolor-64",
- "num-derive 0.5.1",
+ "num-derive",
  "num-traits",
  "vapours",
  "vapoursynth4-rs",
@@ -398,17 +398,6 @@ name = "miette-derive"
 version = "7.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "db5b29714e950dbb20d5e6f74f9dcec4edbcc1067bb7f8ed198c097b8c1a818b"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.119",
-]
-
-[[package]]
-name = "num-derive"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed3955f1a9c7c0c15e092f9c887db08b1fc683305fdf6eb6684f22555355e202"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -734,13 +723,13 @@ checksum = "7dd6e30e90baa6f72411720665d41d89b9a3d039dc45b8faea1ddd07f617f6af"
 
 [[package]]
 name = "vapours"
-version = "0.2.5"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "239f8e4c421199a00692ab6bd3e1ee0dc0ebd28a17b577b69db86fd4510a99fe"
+checksum = "d560ae70789547fa44a0e982df9793e932ff64246d700e7e0682b4cb032cc2be"
 dependencies = [
  "const-str",
  "miette",
- "num-derive 0.4.2",
+ "num-derive",
  "num-traits",
  "seq-macro",
  "strum",
@@ -751,8 +740,9 @@ dependencies = [
 
 [[package]]
 name = "vapoursynth4-rs"
-version = "0.4.0"
-source = "git+https://github.com/inflation/vapoursynth4-rs?rev=3764fcf38a505b704c0982c23c92aa38d245370d#3764fcf38a505b704c0982c23c92aa38d245370d"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a78598c77295d8f4222d161b4377d127e2d510c00c2e5784e12e5615d5b06eb7"
 dependencies = [
  "bon",
  "thiserror",
@@ -761,8 +751,9 @@ dependencies = [
 
 [[package]]
 name = "vapoursynth4-sys"
-version = "0.3.2+R73"
-source = "git+https://github.com/inflation/vapoursynth4-rs?rev=3764fcf38a505b704c0982c23c92aa38d245370d#3764fcf38a505b704c0982c23c92aa38d245370d"
+version = "0.4.1+R79"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5187b816da71a85162d247b24c2fa994c858be997fb3dd27b454bf1630a76335"
 
 [[package]]
 name = "walkdir"

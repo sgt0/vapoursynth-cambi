@@ -1,0 +1,6 @@
+allowed-duplicate-crates = ["syn"]
+disallowed-types = [
+  { path = "vapoursynth4_rs::ffi::VSColorFamily", reason = "prefer the shorter alias", replacement = "vapoursynth4_rs::ColorFamily" },
+  { path = "vapoursynth4_rs::ffi::VSSampleType", reason = "prefer the shorter alias", replacement = "vapoursynth4_rs::SampleType" },
+]
+doc-valid-idents = ["VapourSynth", ".."]

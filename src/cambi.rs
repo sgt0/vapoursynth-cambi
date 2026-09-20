@@ -791,7 +791,7 @@ pub fn cambi_score(
 #[cfg(test)]
 mod tests {
   use approx::assert_relative_eq;
-  use vapoursynth4_rs::ffi::VSColorRange;
+  use vapours::enums::ColorRange;
 
   use super::*;
 
@@ -877,7 +877,7 @@ mod tests {
 
   #[test]
   fn test_tvi_hard_threshold_condition() {
-    let limited = LumaRange::new(10, VSColorRange::VSC_RANGE_LIMITED);
+    let limited = LumaRange::new(10, ColorRange::Limited);
     assert_eq!(
       tvi_hard_threshold_condition(177, 1, 0.019, &limited, &Eotf::Bt1886),
       TviBisect::TooSmall
@@ -902,7 +902,7 @@ mod tests {
       177,
       1,
       0.019,
-      &LumaRange::new(10, VSColorRange::VSC_RANGE_LIMITED),
+      &LumaRange::new(10, ColorRange::Limited),
       &Eotf::Bt1886
     ));
 
@@ -910,7 +910,7 @@ mod tests {
       178,
       1,
       0.019,
-      &LumaRange::new(10, VSColorRange::VSC_RANGE_LIMITED),
+      &LumaRange::new(10, ColorRange::Limited),
       &Eotf::Bt1886
     ));
 
@@ -918,7 +918,7 @@ mod tests {
       179,
       1,
       0.019,
-      &LumaRange::new(10, VSColorRange::VSC_RANGE_LIMITED),
+      &LumaRange::new(10, ColorRange::Limited),
       &Eotf::Bt1886
     ));
 
@@ -926,7 +926,7 @@ mod tests {
       935,
       4,
       0.01,
-      &LumaRange::new(10, VSColorRange::VSC_RANGE_LIMITED),
+      &LumaRange::new(10, ColorRange::Limited),
       &Eotf::Bt1886
     ));
 
@@ -934,7 +934,7 @@ mod tests {
       936,
       4,
       0.01,
-      &LumaRange::new(10, VSColorRange::VSC_RANGE_LIMITED),
+      &LumaRange::new(10, ColorRange::Limited),
       &Eotf::Bt1886
     ));
   }
