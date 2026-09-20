@@ -18,12 +18,12 @@ use cambi::{CambiParams, CambiResult, ContrastArrays, adjust_window_size, cambi_
 use const_str::cstr;
 use luminance::{Eotf, LumaRange};
 use num_traits::FromPrimitive;
-use vapours::frame::VapoursVideoFrame;
+use vapours::{enums::ColorRange, frame::VapoursVideoFrame};
 use vapoursynth4_rs::{
   ColorFamily, SampleType,
   core::CoreRef,
   declare_plugin,
-  ffi::{VSColorRange, VSTransferCharacteristics},
+  ffi::VSTransferCharacteristics,
   frame::{Frame, FrameContext, VideoFrame},
   key,
   map::{AppendMode, KeyStr, MapRef, Value},
@@ -163,10 +163,10 @@ impl Filter for CambiFilter {
         let props = src.properties().expect("cambi: should be able to get frame props.");
         let range = match props
           .get_int_saturated(key!(c"_ColorRange"), 0)
-          .unwrap_or(VSColorRange::VSC_RANGE_LIMITED as i32)
+          .unwrap_or(ColorRange::Limited as i32)
         {
-          0 => VSColorRange::VSC_RANGE_FULL,
-          _ => VSColorRange::VSC_RANGE_LIMITED, // TODO: throw on unknown color range
+          0 => ColorRange::Full,
+          _ => ColorRange::Limited, // TODO: throw on unknown color range
         };
 
         let eotf = match self.eotf {

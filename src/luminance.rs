@@ -1,6 +1,6 @@
 use kolor_64::details::transform::ST_2084_PQ_eotf_float;
 use num_traits::clamp;
-use vapoursynth4_rs::ffi::VSColorRange;
+use vapours::enums::ColorRange;
 
 /// Contains the necessary information to normalize a luma value down to `[0, 1]`.
 #[derive(Debug)]
@@ -10,10 +10,10 @@ pub struct LumaRange {
 }
 
 impl LumaRange {
-  pub const fn new(bit_depth: i32, pix_range: VSColorRange) -> Self {
+  pub const fn new(bit_depth: i32, pix_range: ColorRange) -> Self {
     let (foot, head) = match pix_range {
-      VSColorRange::VSC_RANGE_FULL => (0, (1 << bit_depth) - 1),
-      VSColorRange::VSC_RANGE_LIMITED => (16 * (1 << (bit_depth - 8)), 235 * (1 << (bit_depth - 8))),
+      ColorRange::Full => (0, (1 << bit_depth) - 1),
+      ColorRange::Limited => (16 * (1 << (bit_depth - 8)), 235 * (1 << (bit_depth - 8))),
     };
     Self { foot, head }
   }
@@ -69,10 +69,10 @@ mod tests {
 
   #[test]
   fn test_luma_range() {
-    assert_eq!(LumaRange::new(8, VSColorRange::VSC_RANGE_LIMITED), (16, 235));
-    assert_eq!(LumaRange::new(10, VSColorRange::VSC_RANGE_LIMITED), (64, 940));
-    assert_eq!(LumaRange::new(8, VSColorRange::VSC_RANGE_FULL), (0, 255));
-    assert_eq!(LumaRange::new(10, VSColorRange::VSC_RANGE_FULL), (0, 1023));
+    assert_eq!(LumaRange::new(8, ColorRange::Limited), (16, 235));
+    assert_eq!(LumaRange::new(10, ColorRange::Limited), (64, 940));
+    assert_eq!(LumaRange::new(8, ColorRange::Full), (0, 255));
+    assert_eq!(LumaRange::new(10, ColorRange::Full), (0, 1023));
   }
 
   #[test]
@@ -95,12 +95,12 @@ mod tests {
   #[test]
   fn test_get_luminance() {
     assert_relative_eq!(
-      get_luminance(400, &LumaRange::new(10, VSColorRange::VSC_RANGE_LIMITED), &Eotf::Bt1886),
+      get_luminance(400, &LumaRange::new(10, ColorRange::Limited), &Eotf::Bt1886),
       31.68933962217197,
       epsilon = EPISILON
     );
     assert_relative_eq!(
-      get_luminance(400, &LumaRange::new(10, VSColorRange::VSC_RANGE_FULL), &Eotf::Bt1886),
+      get_luminance(400, &LumaRange::new(10, ColorRange::Full), &Eotf::Bt1886),
       33.13300375755777,
       epsilon = EPISILON
     );
