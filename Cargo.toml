@@ -13,7 +13,7 @@ kolor-64 = "0.1.9"
 num-derive = "0.5.1"
 num-traits = "0.2.19"
 vapours = "=0.2.5"
-vapoursynth4-rs = "=0.4.0"
+vapoursynth4-rs = "=0.5.1"
 
 [dev-dependencies]
 approx = "=0.5.1"
