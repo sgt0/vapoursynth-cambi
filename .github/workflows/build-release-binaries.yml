@@ -48,7 +48,7 @@ jobs:
         uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@adba99c781d3746d38b3a09b1cf797965bcb7fe6 # v4.3.0
+        uses: pypa/cibuildwheel@b3395e271a35f73dad77f21802abe9b986dfe299 # v4.3.1
         env:
           CAMBI_MULTIPLE_TARGET: "1"
           CIBW_ENVIRONMENT_PASS_LINUX: CAMBI_MULTIPLE_TARGET
