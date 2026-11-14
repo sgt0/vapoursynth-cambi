@@ -87,7 +87,7 @@ dependencies = [
  "num-derive",
  "num-traits",
  "vapours",
- "vapoursynth4-rs",
+ "vapoursynth4-rs 0.6.0",
 ]
 
 [[package]]
@@ -729,7 +729,7 @@ dependencies = [
  "strum",
  "strum_macros",
  "thiserror",
- "vapoursynth4-rs",
+ "vapoursynth4-rs 0.5.1",
 ]
 
 [[package]]
@@ -740,7 +740,18 @@ checksum = "a78598c77295d8f4222d161b4377d127e2d510c00c2e5784e12e5615d5b06eb7"
 dependencies = [
  "bon",
  "thiserror",
- "vapoursynth4-sys",
+ "vapoursynth4-sys 0.4.1+R79",
+]
+
+[[package]]
+name = "vapoursynth4-rs"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b3314655e765eaaa047c9c9cbe2cf915f8dc3b63ed5a144a49d8fc8d56c77440"
+dependencies = [
+ "bon",
+ "thiserror",
+ "vapoursynth4-sys 0.5.0+R80",
 ]
 
 [[package]]
@@ -748,6 +759,12 @@ name = "vapoursynth4-sys"
 version = "0.4.1+R79"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5187b816da71a85162d247b24c2fa994c858be997fb3dd27b454bf1630a76335"
+
+[[package]]
+name = "vapoursynth4-sys"
+version = "0.5.0+R80"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d2b9921fc19cf29ed4efba23c4d3525e98f27ae595a3f2a56493aecb1e9ee121"
 
 [[package]]
 name = "walkdir"
